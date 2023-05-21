@@ -31,32 +31,57 @@ async function init() {
     case startMenuOptions[0]:
       console.log('Viewing departments');
       await viewDepartments();
+      cont();
       break;
     case startMenuOptions[1]:
       console.log('Viewing roles');
       await viewRoles();
+      cont();
       break;
     case startMenuOptions[2]:
       console.log('Viewing employees');
       await viewEmployees();
+      cont();
       break;
     case startMenuOptions[3]:
       console.log('Adding a new department');
       await addDepartment();
+      cont();
       break;
     case startMenuOptions[4]:
       console.log('Adding a new role');
       await addRole();
+      cont();
       break;
     case startMenuOptions[5]:
       console.log('Adding a new employee');
       await addEmployee();
+      cont();
       break;
     case startMenuOptions[6]:
       console.log('Updating employee role');
       await updateEmployeeRole();
+      cont();
       break;
   }
+
+  return;
+}
+
+function cont() {
+  inquirer.prompt([
+    {
+      type: 'confirm',
+      message: 'Return to main menu? (y = main menu, n = exit app)\n',
+      name: 'contPrompt'
+    }
+  ]).then((response) => {
+    if (response.contPrompt) {
+      init();
+    } else {
+      return;
+    }
+  });
 }
 
 // Start menu (display on start)
