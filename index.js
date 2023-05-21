@@ -33,10 +33,12 @@ async function init() {
       await viewDepartments();
       break;
     case startMenuOptions[1]:
-      // code
+      console.log('Viewing roles');
+      await viewRoles();
       break;
     case startMenuOptions[2]:
-      // code
+      console.log('Viewing employees');
+      await viewEmployees();
       break;
     case startMenuOptions[3]:
       // code
@@ -71,7 +73,38 @@ function viewDepartments() {
     if (err) {
       console.log(err);
     }
-    console.log(results);
+    console.table(results);
   });
   return;
 }
+
+function viewRoles() {
+  db.query(`SELECT role.id, title, salary, name AS department FROM role INNER JOIN department ON role.department_id = department.id`, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.table(results);
+  });
+  return;
+}
+
+function viewEmployees() {
+  db.query(`SELECT A.id, A.first_name, A.last_name, role.title, department.name AS department, role.salary, A.manager_id, B.first_name AS manager_first_name, B.last_name AS manager_last_name
+  FROM company_db.employee A
+  LEFT JOIN company_db.employee B
+  ON A.manager_id = B.id
+  LEFT JOIN role
+  ON A.role_id = role.id
+  LEFT JOIN department
+  ON role.department_id = department.id
+  `, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.table(results);
+  });
+  return;
+}
+
+// LEFT JOIN role ON employee.role_id = role.id 
+// LEFT JOIN department ON role.department_id = department.id
