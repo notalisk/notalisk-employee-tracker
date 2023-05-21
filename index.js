@@ -41,16 +41,20 @@ async function init() {
       await viewEmployees();
       break;
     case startMenuOptions[3]:
-      // code
+      console.log('Adding a new department');
+      await addDepartment();
       break;
     case startMenuOptions[4]:
-      // code
+      console.log('Adding a new role');
+      await addRole();
       break;
     case startMenuOptions[5]:
-      // code
+      console.log('Adding a new employee');
+      await addEmployee();
       break;
     case startMenuOptions[6]:
-      // code
+      console.log('Updating employee role');
+      await updateEmployeeRole();
       break;
   }
 }
@@ -68,6 +72,7 @@ function startMenu() {
     ]);
 }
 
+// View departments
 function viewDepartments() {
   db.query(`SELECT * FROM department`, (err, results) => {
     if (err) {
@@ -78,6 +83,7 @@ function viewDepartments() {
   return;
 }
 
+// View roles (and departments as a left join)
 function viewRoles() {
   db.query(`SELECT role.id, title, salary, name AS department FROM role INNER JOIN department ON role.department_id = department.id`, (err, results) => {
     if (err) {
@@ -88,15 +94,13 @@ function viewRoles() {
   return;
 }
 
+// View employees (and roles and departments and managers)
 function viewEmployees() {
   db.query(`SELECT A.id, A.first_name, A.last_name, role.title, department.name AS department, role.salary, A.manager_id, B.first_name AS manager_first_name, B.last_name AS manager_last_name
   FROM company_db.employee A
-  LEFT JOIN company_db.employee B
-  ON A.manager_id = B.id
-  LEFT JOIN role
-  ON A.role_id = role.id
-  LEFT JOIN department
-  ON role.department_id = department.id
+  LEFT JOIN company_db.employee B ON A.manager_id = B.id
+  LEFT JOIN role ON A.role_id = role.id
+  LEFT JOIN department ON role.department_id = department.id
   `, (err, results) => {
     if (err) {
       console.log(err);
@@ -106,5 +110,148 @@ function viewEmployees() {
   return;
 }
 
-// LEFT JOIN role ON employee.role_id = role.id 
-// LEFT JOIN department ON role.department_id = department.id
+// Add department
+async function addDepartment() {
+  let response = await inquirer.prompt([
+    {
+      type: 'input',
+      message: 'Enter the name of the new department:',
+      name: 'newDepartment'
+    }
+  ]);
+
+  db.query(`INSERT INTO company_db.department (name) VALUES ('${response.newDepartment}');`, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Department successfully added!');
+  });
+
+  return;
+}
+
+async function addRole() {
+  let response = await inquirer.prompt([
+    {
+      type: 'input',
+      message: 'Enter the title of the new role:',
+      name: 'title'
+    },
+    {
+      type: 'number',
+      message: 'What is the salary?',
+      name: 'salary'
+    },
+    {
+      type: 'input',
+      message: 'Enter the ID number of the corresponding department:',
+      name: 'departmentId'
+    }
+  ]);
+
+  db.query(`INSERT INTO company_db.role (title, salary, department_id) VALUES ('${response.title}', '${response.salary}', '${response.departmentId}');`, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Role successfully added!');
+  });
+
+  return;
+}
+
+async function addEmployee() {
+  let response = await inquirer.prompt([
+    {
+      type: 'input',
+      message: 'First name:',
+      name: 'firstName'
+    },
+    {
+      type: 'input',
+      message: 'Last name:',
+      name: 'lastName'
+    },
+    {
+      type: 'number',
+      message: 'Enter the ID number of the employees role:',
+      name: 'roleId'
+    },
+    {
+      type: 'number',
+      message: 'Enter the ID of the employee manager:',
+      name: 'managerId'
+    }
+  ]);
+
+  db.query(`INSERT INTO company_db.employee (first_name, last_name, role_id, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${response.roleId}', '${response.managerId}');`, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    console.log('Role successfully added!');
+  });
+
+  return;
+}
+
+async function updateEmployeeRole() {
+
+  // Get employees and map to array (first and last name)
+  db.query(`SELECT * FROM employee`, (err, results) => {
+    if (err) {
+      console.log(err);
+    }
+    
+    let employees = results.map((data) => {
+      return [data.first_name, data.last_name].join(' ');
+    });
+
+    // Get roles and map to array (title)
+    db.query(`SELECT * FROM role`, (err, results) => {
+      if (err) {
+        console.log(err);
+      }
+
+      let roles = results.map((data) => {
+        return data.title;
+      });
+
+      // Prompt
+      inquirer.prompt([
+        {
+          type: 'list',
+          message: 'Which employee would you like to update?',
+          name: 'employeeToUpdate',
+          choices: employees
+        }, 
+        {
+          type: 'list',
+          message: 'Select their new role:',
+          name: 'newRole',
+          choices: roles
+        }
+      ])
+      .then((response) => {
+
+        // Get role_id from role name
+        let roleId = roles.findIndex((roles) => {
+          return roles == response.newRole;
+        });
+
+        let employeeId = employees.findIndex((employees) => {
+          return employees == response.employeeToUpdate;
+        });
+
+        // Update database
+        db.query(`UPDATE company_db.employee
+          SET role_id = '${roleId + 1}'
+          WHERE id = '${employeeId + 1}';`, (err, results) => {
+          if (err) {
+            console.log(err);
+          }
+
+          console.log('Successfully updated!');
+        });
+      });
+    });
+  });
+}
