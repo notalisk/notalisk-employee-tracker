@@ -29,39 +29,45 @@ async function init() {
   // Decide what to do based on response
   switch (response.startMenu) {
     case startMenuOptions[0]:
+      console.log('\n');
       console.log('Viewing departments');
       await viewDepartments();
       cont();
       break;
     case startMenuOptions[1]:
+      console.log('\n');
       console.log('Viewing roles');
       await viewRoles();
       cont();
       break;
     case startMenuOptions[2]:
+      console.log('\n');
       console.log('Viewing employees');
       await viewEmployees();
       cont();
       break;
     case startMenuOptions[3]:
+      console.log('\n');
       console.log('Adding a new department');
       await addDepartment();
       cont();
       break;
     case startMenuOptions[4]:
+      console.log('\n');
       console.log('Adding a new role');
       await addRole();
       cont();
       break;
     case startMenuOptions[5]:
+      console.log('\n');
       console.log('Adding a new employee');
       await addEmployee();
       cont();
       break;
     case startMenuOptions[6]:
+      console.log('\n');
       console.log('Updating employee role');
       await updateEmployeeRole();
-      cont();
       break;
   }
 
@@ -72,7 +78,7 @@ function cont() {
   inquirer.prompt([
     {
       type: 'confirm',
-      message: 'Return to main menu? (y = main menu, n = exit app)\n',
+      message: 'type "y" to return to the main menu or "control + c" to exit the app',
       name: 'contPrompt'
     }
   ]).then((response) => {
@@ -103,6 +109,7 @@ function viewDepartments() {
     if (err) {
       console.log(err);
     }
+    console.log('\n');
     console.table(results);
   });
   return;
@@ -114,6 +121,7 @@ function viewRoles() {
     if (err) {
       console.log(err);
     }
+    console.log('\n');
     console.table(results);
   });
   return;
@@ -130,6 +138,7 @@ function viewEmployees() {
     if (err) {
       console.log(err);
     }
+    console.log('\n');
     console.table(results);
   });
   return;
@@ -149,6 +158,7 @@ async function addDepartment() {
     if (err) {
       console.log(err);
     }
+    console.log('\n');
     console.log('Department successfully added!');
   });
 
@@ -178,6 +188,7 @@ async function addRole() {
     if (err) {
       console.log(err);
     }
+    console.log('\n');
     console.log('Role successfully added!');
   });
 
@@ -212,13 +223,14 @@ async function addEmployee() {
     if (err) {
       console.log(err);
     }
-    console.log('Role successfully added!');
+    console.log('\n');
+    console.log('Employee successfully added!');
   });
 
   return;
 }
 
-async function updateEmployeeRole() {
+function updateEmployeeRole() {
 
   // Get employees and map to array (first and last name)
   db.query(`SELECT * FROM employee`, (err, results) => {
@@ -274,7 +286,9 @@ async function updateEmployeeRole() {
             console.log(err);
           }
 
+          console.log('\n');
           console.log('Successfully updated!');
+          cont();
         });
       });
     });
